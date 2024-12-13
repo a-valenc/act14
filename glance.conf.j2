@@ -1,0 +1,16 @@
+[database]
+connection = mysql+pymysql://{{ glance_database_user }}:{{ glance_database_password }}@{{ mysql_server_address }}/{{ glance_database_name }}
+
+[keystone_authtoken]
+www_authenticate_uri = http://{{ os_controller_primary_node }}:5000
+auth_url = http://{{ os_controller_primary_node }}:5000
+memcached_servers = {{ os_controller_primary_node }}:11211
+auth_type = password
+project_domain_name = Default
+user_domain_name = Default
+project_name = service
+username = glance
+password = {{ glance_service_password }}
+
+[paste_deploy]
+flavor = keystone

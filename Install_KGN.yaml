@@ -1,0 +1,64 @@
+---
+- name: OpenStack Installation
+  hosts: all
+  become: yes
+  vars:
+    keystone_admin_password: "4valencia"
+    glance_db_password: "4valencia"
+    nova_db_password: "4valencia"
+
+  tasks:
+    - name: Add OpenStack Repository
+      apt_repository:
+        repo: cloud-archive:rocky
+        state: present
+
+
+    - name: Install required packages
+      apt:
+        name:
+          - openstack-keystone
+          - glance
+          - nova-compute
+        state: present
+      notify:
+        - restart keystone
+        - restart glance
+        - restart nova
+
+    - name: Include role for Keystone
+      import_role:
+        name: keystone
+        tasks_from: main.yml
+      vars:
+        keystone_admin_password: "{{ keystone_admin_password }}"
+
+    - name: Include role for Glance
+      import_role:
+        name: glance
+        tasks_from: main.yml
+      vars:
+        glance_db_password: "{{ glance_db_password }}"
+
+    - name: Include role for Nova
+      import_role:
+        name: nova
+        tasks_from: main.yml
+      vars:
+        nova_db_password: "{{ nova_db_password }}"
+
+  handlers:
+    - name: restart keystone
+      systemd:
+        name: openstack-keystone
+        state: restarted
+
+    - name: restart glance
+      systemd:
+        name: openstack-glance
+        state: restarted
+
+    - name: restart nova
+      systemd:
+        name: nova-compute
+        state: restarted
